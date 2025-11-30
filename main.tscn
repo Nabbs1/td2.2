@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://dr2748ckpnhi7"]
+[gd_scene load_steps=26 format=3 uid="uid://dr2748ckpnhi7"]
 
 [ext_resource type="Script" uid="uid://c6nc1w0whxjtb" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://d4j2i62xyf718" path="res://camera_3d.gd" id="2_0xm2m"]
@@ -16,7 +16,6 @@
 [ext_resource type="PackedScene" uid="uid://xsdssdq26e5t" path="res://monster_mouth.tscn" id="9_4c57u"]
 [ext_resource type="FontFile" uid="uid://bnxr6cv74u5d0" path="res://models/HELVETICA73-EXTENDED.TTF" id="15_vivmo"]
 [ext_resource type="PackedScene" uid="uid://rm2gq1qyfsdm" path="res://weather_fog.tscn" id="16_2cqfq"]
-[ext_resource type="PackedScene" uid="uid://cwx08a2nbem06" path="res://models/cube_boss.gltf" id="17_yaehf"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_2cqfq"]
 sky_top_color = Color(0.106126174, 0, 0.3189972, 1)
@@ -109,6 +108,3 @@ visible = false
 [node name="WeatherFog2" parent="." instance=ExtResource("16_2cqfq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8086014, 2.6696014, -64.06297)
 visible = false
-
-[node name="blockbench_export" parent="." instance=ExtResource("17_yaehf")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.225014, 0.21681595, -6.7349052)
