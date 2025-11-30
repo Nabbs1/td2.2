@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3 uid="uid://dx5uo1eu715pq"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lq6ci"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.3)
+
+[sub_resource type="Gradient" id="Gradient_lq6ci"]
+colors = PackedColorArray(0.58383155, 0.58383155, 0.58383155, 0.3, 0.48452926, 0, 0.48452926, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_7vf6c"]
+gradient = SubResource("Gradient_lq6ci")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_7xvvk"]
+emission_shape = 3
+emission_box_extents = Vector3(30, 5, 30)
+direction = Vector3(0, 0.2, 0)
+spread = 180.0
+initial_velocity_min = 0.29999998
+initial_velocity_max = 0.79999995
+gravity = Vector3(0, 0.1, 0)
+scale_min = 2.0
+scale_max = 4.0
+color_ramp = SubResource("GradientTexture1D_7vf6c")
+
+[sub_resource type="BoxMesh" id="BoxMesh_lq6ci"]
+
+[node name="weather_smoke" type="Node3D"]
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+material_override = SubResource("StandardMaterial3D_lq6ci")
+custom_aabb = AABB(60, 60, 60, 0, 0, 0)
+emitting = false
+amount = 500
+lifetime = 10.0
+visibility_aabb = AABB(-30, -10, -30, 60, 20, 60)
+process_material = SubResource("ParticleProcessMaterial_7xvvk")
+draw_pass_1 = SubResource("BoxMesh_lq6ci")

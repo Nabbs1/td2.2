@@ -1,0 +1,41 @@
+[gd_scene load_steps=6 format=3 uid="uid://xsdssdq26e5t"]
+
+[ext_resource type="PackedScene" uid="uid://du282mrxmtf5e" path="res://models/spawn.gltf" id="1_6e3b5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6e3b5"]
+albedo_color = Color(1, 0, 0, 1)
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_kudgm"]
+material = SubResource("StandardMaterial3D_6e3b5")
+size = Vector2(1.5, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kudgm"]
+albedo_color = Color(0, 0, 0, 1)
+metallic = 0.2
+metallic_specular = 0.8
+roughness = 0.2
+emission_enabled = true
+emission_energy_multiplier = 0.5
+clearcoat_enabled = true
+clearcoat = 0.5
+clearcoat_roughness = 0.1
+
+[sub_resource type="BoxMesh" id="BoxMesh_lpckq"]
+material = SubResource("StandardMaterial3D_kudgm")
+size = Vector3(1.5, 0.1, 0.8)
+
+[node name="MonsterMouth" type="Node3D"]
+
+[node name="blockbench_export" parent="." instance=ExtResource("1_6e3b5")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, -1.6158104)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="blockbench_export"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 1.3988159, 0.91876876)
+mesh = SubResource("PlaneMesh_kudgm")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="blockbench_export"]
+transform = Transform3D(1, 0, 0, 0, 0.007644455, -0.9999709, 0, 0.9999709, 0.007644455, 0, 0.5240583, 0.82789856)
+mesh = SubResource("BoxMesh_lpckq")

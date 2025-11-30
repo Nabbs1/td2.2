@@ -1,0 +1,53 @@
+[gd_scene load_steps=8 format=3 uid="uid://08h1s84d56i8"]
+
+[ext_resource type="Script" uid="uid://27lep0nufffg" path="res://tower_1.gd" id="1_lk4o5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4gdq"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yekfl"]
+material = SubResource("StandardMaterial3D_r4gdq")
+size = Vector3(1.5, 1, 1.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2jaw"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_08ph3"]
+material = SubResource("StandardMaterial3D_h2jaw")
+size = Vector3(1.2, 0.6, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6w48a"]
+albedo_color = Color(0.16206557, 0.1620656, 0.16206557, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4s503"]
+material = SubResource("StandardMaterial3D_6w48a")
+size = Vector3(0.4, 0.8, 0.4)
+
+[node name="Tower2" type="Node3D"]
+script = ExtResource("1_lk4o5")
+tower_cost = 150
+attack_range = 5.0
+damage = 5
+fire_rate = 4.0
+projectile_type = "Bullet"
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_yekfl")
+
+[node name="Turret" type="Node3D" parent="."]
+
+[node name="TurretBody" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3511661, 0)
+mesh = SubResource("BoxMesh_08ph3")
+skeleton = NodePath("../..")
+
+[node name="BarrelLeft" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.25, 1.3481661, 0.698)
+mesh = SubResource("BoxMesh_4s503")
+skeleton = NodePath("../TurretBody")
+
+[node name="BarrelRight" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.25, 1.3481661, 0.698)
+mesh = SubResource("BoxMesh_4s503")
+skeleton = NodePath("../TurretBody")

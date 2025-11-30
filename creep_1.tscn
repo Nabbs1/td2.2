@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3 uid="uid://ba0ncrjwoq5ut"]
+
+[ext_resource type="Script" uid="uid://ovtehmh73y1" path="res://enemy.gd" id="1_hajkn"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hajkn"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gsoum"]
+albedo_color = Color(0.16206557, 0.1620656, 0.16206557, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_hajkn"]
+material = SubResource("StandardMaterial3D_gsoum")
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hajkn"]
+albedo_color = Color(1, 0, 0, 1)
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_s63ue"]
+material = SubResource("StandardMaterial3D_hajkn")
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="creep1" type="Node3D"]
+script = ExtResource("1_hajkn")
+gold_reward = 20
+enable_smoke_trail = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_hajkn")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_hajkn")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25, 0.100000024, 0.35)
+mesh = SubResource("BoxMesh_s63ue")
+skeleton = NodePath("../..")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 0.100000024, 0.35)
+mesh = SubResource("BoxMesh_s63ue")
+skeleton = NodePath("../..")

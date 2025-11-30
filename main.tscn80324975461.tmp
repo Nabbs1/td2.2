@@ -1,0 +1,75 @@
+[gd_scene load_steps=22 format=3 uid="uid://dr2748ckpnhi7"]
+
+[ext_resource type="Script" uid="uid://c6nc1w0whxjtb" path="res://main.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://d4j2i62xyf718" path="res://camera_3d.gd" id="2_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://btch5nvtjsxs4" path="res://tower_1.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://ba0ncrjwoq5ut" path="res://creep_1.tscn" id="3_5vw27"]
+[ext_resource type="PackedScene" uid="uid://08h1s84d56i8" path="res://tower_2.tscn" id="3_kek77"]
+[ext_resource type="PackedScene" uid="uid://c4peg6781k3m8" path="res://creep_2.tscn" id="4_kek77"]
+[ext_resource type="PackedScene" uid="uid://bmehntignojn8" path="res://tower_3.tscn" id="4_w48qg"]
+[ext_resource type="PackedScene" uid="uid://drguxeackdxtp" path="res://creep_3.tscn" id="5_4c57u"]
+[ext_resource type="PackedScene" uid="uid://dd8egsqjx3jlg" path="res://tower_4.tscn" id="5_vivmo"]
+[ext_resource type="PackedScene" uid="uid://cxvbwh740y2g4" path="res://tower_5.tscn" id="6_2cqfq"]
+[ext_resource type="PackedScene" uid="uid://cc3vqr230j4we" path="res://creep_4.tscn" id="6_efxa6"]
+[ext_resource type="PackedScene" uid="uid://ch2o6bg84ylui" path="res://creep_5.tscn" id="7_dg77c"]
+[ext_resource type="PackedScene" uid="uid://bokn7qibfhb48" path="res://tower_6.tscn" id="7_yaehf"]
+[ext_resource type="PackedScene" uid="uid://xsdssdq26e5t" path="res://monster_mouth.tscn" id="9_4c57u"]
+[ext_resource type="FontFile" uid="uid://bnxr6cv74u5d0" path="res://models/HELVETICA73-EXTENDED.TTF" id="15_vivmo"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w48qg"]
+albedo_color = Color(0.7019608, 0.26666668, 0.7019608, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_vivmo"]
+material = SubResource("StandardMaterial3D_w48qg")
+size = Vector2(60, 60)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vivmo"]
+albedo_color = Color(0.82606, 0.82606006, 0.82606, 1)
+emission = Color(0.42352942, 0, 1, 1)
+emission_energy_multiplier = 0.5
+backlight = Color(0.4117647, 0, 1, 1)
+
+[sub_resource type="TextMesh" id="TextMesh_2cqfq"]
+material = SubResource("StandardMaterial3D_vivmo")
+text = "ATTRITION"
+font = ExtResource("15_vivmo")
+font_size = 120
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2cqfq"]
+albedo_color = Color(0.15487596, 0.154876, 0.15487596, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_yaehf"]
+material = SubResource("StandardMaterial3D_2cqfq")
+size = Vector2(8, 4)
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_ig7tw")
+tower_1_scene = ExtResource("2_h2yge")
+tower_2_scene = ExtResource("3_kek77")
+tower_3_scene = ExtResource("4_w48qg")
+tower_4_scene = ExtResource("5_vivmo")
+tower_5_scene = ExtResource("6_2cqfq")
+tower_6_scene = ExtResource("7_yaehf")
+creep_1_scene = ExtResource("3_5vw27")
+creep_2_scene = ExtResource("4_kek77")
+creep_3_scene = ExtResource("5_4c57u")
+creep_4_scene = ExtResource("6_efxa6")
+creep_5_scene = ExtResource("7_dg77c")
+monster_mouth_scene = ExtResource("9_4c57u")
+player_gold = 1000
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.6324485, 0.44476977, -0.6341835, 0, 0.81872135, 0.57419103, 0.7746024, -0.36314625, 0.5177991, 0, 15, 15)
+script = ExtResource("2_0xm2m")
+
+[node name="GroundPlane" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("PlaneMesh_vivmo")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 29.8, 6.960335, 12.062532)
+mesh = SubResource("TextMesh_2cqfq")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.371139e-08, -1, 4.371139e-08, 0, -4.371139e-08, -1, 1, -4.371139e-08, 1.9106855e-15, 30, 5.8881993, 12.049362)
+mesh = SubResource("PlaneMesh_yaehf")

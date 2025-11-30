@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://bokn7qibfhb48"]
+
+[ext_resource type="Script" uid="uid://27lep0nufffg" path="res://tower_1.gd" id="1_5q0u8"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2jaw"]
+albedo_color = Color(0.38226682, 0.18706879, 0.5345851, 1)
+emission_enabled = true
+emission = Color(0.42691904, 0.21472484, 0.59336776, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_08ph3"]
+material = SubResource("StandardMaterial3D_h2jaw")
+size = Vector3(0.8, 1, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4gdq"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yekfl"]
+material = SubResource("StandardMaterial3D_r4gdq")
+size = Vector3(1.5, 1, 1.5)
+
+[node name="Tower6" type="Node3D"]
+script = ExtResource("1_5q0u8")
+tower_cost = 250
+attack_range = 5.0
+damage = 30
+fire_rate = 0.8
+slow_amount = 0.9
+slow_duration = 1.0
+area_of_effect = true
+projectile_type = "Pulse"
+
+[node name="Turret" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.99999475, -0.003228873, 0, 0.003228873, 0.99999475, 0, 1.4045978, 0)
+mesh = SubResource("BoxMesh_08ph3")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_yekfl")

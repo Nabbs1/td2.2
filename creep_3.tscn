@@ -1,0 +1,39 @@
+[gd_scene load_steps=6 format=3 uid="uid://drguxeackdxtp"]
+
+[ext_resource type="Script" uid="uid://ovtehmh73y1" path="res://enemy.gd" id="1_1x006"]
+[ext_resource type="PackedScene" uid="uid://cckux0hwv0jrw" path="res://models/cube3.gltf" id="2_36uwd"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hajkn"]
+size = Vector3(0.8, 0.8, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hajkn"]
+albedo_color = Color(1, 0, 0, 1)
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_s63ue"]
+material = SubResource("StandardMaterial3D_hajkn")
+size = Vector3(0.2, 0.2, 0.2)
+
+[node name="creep" type="Node3D"]
+script = ExtResource("1_1x006")
+max_health = 400
+move_speed = 1.8
+gold_reward = 80
+shatter_cube_count = 20
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_hajkn")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, -0.23117375, 1.1916268, 0.38068256)
+mesh = SubResource("BoxMesh_s63ue")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 0.21692143, 1.1916268, 0.38468254)
+mesh = SubResource("BoxMesh_s63ue")
+
+[node name="blockbench_export" parent="." instance=ExtResource("2_36uwd")]
+transform = Transform3D(-1.6, 0, -2.4159328e-07, 0, 1.6, 0, 2.4159328e-07, 0, -1.6, 8.2969666e-05, 0.106434226, -0.0071033537)

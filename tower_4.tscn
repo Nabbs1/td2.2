@@ -1,0 +1,106 @@
+[gd_scene load_steps=12 format=3 uid="uid://dd8egsqjx3jlg"]
+
+[ext_resource type="Script" uid="uid://27lep0nufffg" path="res://tower_1.gd" id="1_tgxvo"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2jaw"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_08ph3"]
+material = SubResource("StandardMaterial3D_h2jaw")
+size = Vector3(0.2, 0.8, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6w48a"]
+albedo_color = Color(0.16206557, 0.1620656, 0.16206557, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_4s503"]
+material = SubResource("StandardMaterial3D_6w48a")
+size = Vector3(0.4, 0.2, 0.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tgxvo"]
+albedo_color = Color(1, 0.6627451, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ibnc7"]
+material = SubResource("StandardMaterial3D_tgxvo")
+size = Vector3(0.1, 0.2, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c7651"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eb8cd"]
+material = SubResource("StandardMaterial3D_c7651")
+size = Vector3(0.6, 0.6, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4gdq"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yekfl"]
+material = SubResource("StandardMaterial3D_r4gdq")
+size = Vector3(1.5, 1, 1.5)
+
+[node name="Tower4" type="Node3D"]
+script = ExtResource("1_tgxvo")
+tower_cost = 175
+attack_range = 10.0
+damage = 30
+fire_rate = 1.5
+area_of_effect = true
+flying_only = true
+projectile_type = "Missile"
+projectile_speed = 10.0
+projectile_scale = 0.5
+
+[node name="Turret" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9090471, 0.41669333, 0, -0.41669333, 0.9090471, 0, 1.4045978, 0)
+mesh = SubResource("BoxMesh_08ph3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, 0.36844474, 0.20055759, 0.72030747)
+mesh = SubResource("BoxMesh_4s503")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0641979, 0.04740119, -0.081321955)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.04740119, -0.081321955)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Turret/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0641979, 0.060937285, 0.074944735)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Turret/MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.060937285, 0.074944735)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, -0.31858438, 0.20055759, 0.72030747)
+mesh = SubResource("BoxMesh_4s503")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0641979, 0.04740119, -0.081321955)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.04740119, -0.081321955)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Turret/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0641979, 0.060937285, 0.074944735)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Turret/MeshInstance3D2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.060937285, 0.074944735)
+mesh = SubResource("BoxMesh_ibnc7")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0.17418313, 0)
+mesh = SubResource("BoxMesh_eb8cd")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4234695, 0.17002487, 0)
+mesh = SubResource("BoxMesh_eb8cd")
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_yekfl")

@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://rm2gq1qyfsdm"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ny4bh"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.2827793, 0.2716998, 0.21508199, 0.125)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_rfpvy"]
+emission_shape = 3
+emission_box_extents = Vector3(30, 5, 30)
+direction = Vector3(0, 0.2, 0)
+spread = 180.0
+initial_velocity_min = 0.5
+initial_velocity_max = 1.0
+gravity = Vector3(0, 0.1, 0)
+scale_min = 2.0
+scale_max = 4.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_ybmrd"]
+
+[node name="WeatherFog" type="Node3D"]
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="."]
+material_override = SubResource("StandardMaterial3D_ny4bh")
+amount = 500
+lifetime = 10.0
+visibility_aabb = AABB(-4, -4, -4, 60, 60, 60)
+process_material = SubResource("ParticleProcessMaterial_rfpvy")
+draw_pass_1 = SubResource("BoxMesh_ybmrd")
