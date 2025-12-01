@@ -44,10 +44,12 @@ size = Vector3(1.5, 1, 1.5)
 script = ExtResource("1_2d87r")
 tower_cost = 125
 attack_range = 5.0
-fire_rate = 1.2
+damage = 2
+fire_rate = 4.0
 applies_slow = true
 projectile_type = "Ice"
-projectile_speed = 10.0
+projectile_speed = 15.0
+burst_fire = true
 
 [node name="Turret" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.9090471, 0.41669333, 0, -0.41669333, 0.9090471, 0, 1.4045978, 0)

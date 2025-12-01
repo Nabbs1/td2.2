@@ -1,8 +1,9 @@
-[gd_scene load_steps=26 format=3 uid="uid://dr2748ckpnhi7"]
+[gd_scene load_steps=27 format=3 uid="uid://dr2748ckpnhi7"]
 
 [ext_resource type="Script" uid="uid://c6nc1w0whxjtb" path="res://main.gd" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://d4j2i62xyf718" path="res://camera_3d.gd" id="2_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://btch5nvtjsxs4" path="res://tower_1.tscn" id="2_h2yge"]
+[ext_resource type="PackedScene" uid="uid://bk0jc77p4ljkx" path="res://tower_0.tscn" id="2_yaehf"]
 [ext_resource type="PackedScene" uid="uid://ba0ncrjwoq5ut" path="res://creep_1.tscn" id="3_5vw27"]
 [ext_resource type="PackedScene" uid="uid://08h1s84d56i8" path="res://tower_2.tscn" id="3_kek77"]
 [ext_resource type="PackedScene" uid="uid://c4peg6781k3m8" path="res://creep_2.tscn" id="4_kek77"]
@@ -34,7 +35,9 @@ ssao_enabled = true
 glow_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w48qg"]
-albedo_color = Color(0.7019608, 0.26666668, 0.7019608, 1)
+albedo_color = Color(0, 0, 0, 1)
+emission_enabled = true
+emission = Color(0.28235295, 0.011764706, 0.7176471, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_vivmo"]
 material = SubResource("StandardMaterial3D_w48qg")
@@ -62,7 +65,7 @@ size = Vector2(8, 4)
 [node name="Main" type="Node3D"]
 script = ExtResource("1_ig7tw")
 obstacle_cluster_count = 16
-base_brightness = 0.05
+tower_0_scene = ExtResource("2_yaehf")
 tower_1_scene = ExtResource("2_h2yge")
 tower_2_scene = ExtResource("3_kek77")
 tower_3_scene = ExtResource("4_w48qg")
@@ -108,3 +111,5 @@ visible = false
 [node name="WeatherFog2" parent="." instance=ExtResource("16_2cqfq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8086014, 2.6696014, -64.06297)
 visible = false
+
+[node name="Node" type="Node" parent="."]

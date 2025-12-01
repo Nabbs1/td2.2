@@ -87,12 +87,85 @@ func create_ground():
 			var brightness = base_brightness + randf_range(-brightness_variation, brightness_variation)
 			
 			# Make obstacles slightly brighter so they're visible
-			if is_obstacle:
-				brightness += 0.05
+			#if is_obstacle:
+				#brightness += 0.05
+				#
+				## ADD NOISE TEXTURE FOR OBSTACLES ONLY
+				##var noise = FastNoiseLite.new()
+				##noise.seed = randi()
+				##noise.noise_type = FastNoiseLite.TYPE_PERLIN
+				##noise.frequency = 0.5
+				#var noise = FastNoiseLite.new()
+				#noise.seed = randi()
+				#noise.noise_type = FastNoiseLite.TYPE_CELLULAR  # Changed from PERLIN
+				#noise.frequency = 0.3  # Lower = bigger patterns
+				#noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+				#noise.fractal_octaves = 3  # More detail layers
+				#var noise_texture = NoiseTexture2D.new()
+				#noise_texture.noise = noise
+				#noise_texture.width = 512
+				#noise_texture.height = 512
+				#
+				#material.albedo_texture = noise_texture
+				#material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+				#material.uv1_scale = Vector3(2, 2, 2)  # Scale texture
+				#material.uv1_triplanar = true  # Important for cubes!
+				#material.uv1_triplanar_sharpness = 4.0
+				#material.roughness = 0.8  # Rougher for stone
+			#
+			#if is_obstacle:
+	# VERY PROMINENT NOISE SETUP
+			var noise = FastNoiseLite.new()
+			noise.seed = randi()
 			
+			#noise.noise_type = FastNoiseLite.TYPE_CELLULAR  # Rocky
+			#noise.frequency = 0.25  # Bigger patterns
+			#noise.fractal_octaves = 5  # Lots of detail
+			#
+			if is_obstacle:
+				# Chunky rocky noise for obstacles
+				noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+				noise.frequency = 0.3
+				noise.fractal_octaves = 5
+			else:
+				# Subtle concrete-like noise for floor
+				noise.noise_type = FastNoiseLite.TYPE_PERLIN
+				noise.frequency = 0.6
+				noise.fractal_octaves = 2
+			
+			noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+			noise.fractal_lacunarity = 2.5  # More variation
+			noise.fractal_gain = 0.6
+
+			var noise_texture = NoiseTexture2D.new()
+			noise_texture.noise = noise
+			noise_texture.width = 128	  # Higher resolution
+			noise_texture.height = 128
+			noise_texture.as_normal_map = false  # Use for color
+
+			material.albedo_texture = noise_texture
+			material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+
+			# Brighter base color so noise shows
+			material.albedo_color = Color(0.4, 0.4, 0.4)  # Much brighter!
+
+			# Bigger texture scale = smaller pattern (more visible detail)
+			material.uv1_scale = Vector3(1.5, 1.5, 1.5)  # Reduced from 2
+			material.uv1_triplanar = true
+			material.uv1_triplanar_sharpness = 4.0
+
+			# Add normal map for depth
+			material.normal_enabled = true
+			material.normal_texture = noise_texture
+			material.normal_scale = 2.5  # Very bumpy
+
+			material.roughness = 0.9
+			material.metallic = 0.0
+			# VERY PROMINENT NOISE SETUP
+				
+				
 			material.albedo_color = Color(brightness, brightness, brightness)
 			material.metallic = metallic
-			material.roughness = roughness
 			tile.set_surface_override_material(0, material)
 			
 			# Add collision
@@ -556,25 +629,54 @@ func create_border_tile(pos: Vector2i, ring: int):
 	tile.position = world_pos
 	tile.position.y = height / 2.0
 	
-	# Randomly pick one of three grey tones
+	# CREATE CELLULAR NOISE TEXTURE
 	var material = StandardMaterial3D.new()
+	
+	var noise = FastNoiseLite.new()
+	noise.seed = randi()
+	noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	noise.frequency = 0.4
+	noise.fractal_octaves = 4
+	noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+	
+	var noise_texture = NoiseTexture2D.new()
+	noise_texture.noise = noise
+	noise_texture.width = 128
+	noise_texture.height = 128
+	
+	material.albedo_texture = noise_texture
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	material.uv1_scale = Vector3(1.5, 1.5, 1.5)
+	material.uv1_triplanar = true
+	material.uv1_triplanar_sharpness = 4.0
+	
+	# Add normal map for depth
+	material.normal_enabled = true
+	material.normal_texture = noise_texture
+	material.normal_scale = 2.0
+	
+	# Randomly pick grey tone
 	var color_choice = randi() % 3
 	var color: Color
 	
 	match color_choice:
-		0:  # Dark greye
-			var brightness = base_brightness - 0.05
+		0:  # Dark grey
+			var brightness = base_brightness - 0.1
 			color = Color(brightness, brightness, brightness)
 		1:  # Grey
-			var brightness = base_brightness
+			var brightness = base_brightness - 0.05
 			color = Color(brightness, brightness, brightness)
 		2:  # Blue-grey
-			var brightness = base_brightness
-			color = Color(brightness * 0.9, brightness * 0.95, brightness * 1.1)
-	
+			var brightness = base_brightness - 0.03
+			color = Color(brightness * 1, brightness * 0.85, brightness * 1.15)
+			# ADD EMISSION FOR BLUE-GREY ONLY
+			material.emission_enabled = true
+			material.emission = Color(0.3, 0.0, 0.5)  # Purple  glow
+			material.emission_energy_multiplier = 0.05  # Adjust brightness (0.2 = subtle, 2.0 = bright)
+
 	material.albedo_color = color
-	material.metallic = metallic
-	material.roughness = roughness
+	material.metallic = 0.1  # Less metallic for stone
+	material.roughness = 0.9  # Very rough for stone
 	tile.set_surface_override_material(0, material)
 	
 	add_child(tile)

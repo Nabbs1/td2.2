@@ -22,6 +22,7 @@ extends Node3D
 
 @export var area_of_effect: bool = false
 @export var aoe_radius: float = 3.0  # Damage radius around target
+@export var aoe_visual_effects: bool = false  # Show explosion particles
 
 @export var flying_only: bool = false  # Only targets flying enemies
 
@@ -29,7 +30,10 @@ extends Node3D
 @export_enum("None", "Bullet", "Missile", "Ice", "Pulse") var projectile_type: String = "None"
 @export var projectile_speed: float = 20.0  # Speed for bullets/missiles
 @export var projectile_scale: float = 1.0  # Size multiplier for projectile
-
+@export var burst_fire: bool = false  # Enable burst fire mode
+@export var burst_count: int = 4  # How many shots per burst
+@export var burst_delay: float = 0.1  # Delay between shots in burst (seconds)
+@export var burst_cooldown: float = 2.0  # Extra delay after burst finishes
 # References
 var turret: Node3D = null
 var barrel: Node3D = null 
@@ -39,6 +43,9 @@ var current_barrel: int = 0
 var current_target: Node3D = null
 var fire_timer: float = 0.0
 var kill_count: int = 0
+var burst_shots_remaining: int = 0
+var burst_timer: float = 0.0
+var is_bursting: bool = false
 # Range indicator (for debugging/visualization)
 var range_indicator: MeshInstance3D
 
@@ -74,12 +81,31 @@ func _ready():
 func _process(delta):
 	if get_tree().paused:
 		return
+	
+	# WALL TOWER - skip all combat logic
+	if tower_cost <= 25 and projectile_type == "None":
+		return  # Walls don't do anything
 		
 	if projectile_type == "Pulse" and turret:
 		turret.rotate_y(delta * 1.5)  
 	# Update fire timer
 	fire_timer += delta
-	
+	# Handle burst fire timing
+	if is_bursting:
+		burst_timer += delta
+		
+		# Time to fire next shot in burst
+		if burst_timer >= burst_delay and burst_shots_remaining > 0:
+			shoot_at_target()
+			burst_shots_remaining -= 1
+			burst_timer = 0.0
+			
+			# Burst finished
+			if burst_shots_remaining <= 0:
+				is_bursting = false
+				fire_timer = -burst_cooldown  # Add extra cooldown after burst
+		
+		return  # Don't do normal targeting while bursting
 	# Find and track target
 	update_target()
 	
@@ -87,9 +113,19 @@ func _process(delta):
 		# Rotate turret toward target
 		rotate_turret_to_target(delta)
 		
-		# Shoot if ready
+				# Shoot if ready
 		if fire_timer >= 1.0 / fire_rate:
-			shoot_at_target()
+			if burst_fire:
+				# Start burst sequence
+				is_bursting = true
+				burst_shots_remaining = burst_count
+				burst_timer = 0.0
+				shoot_at_target()  # Fire first shot immediately
+				burst_shots_remaining -= 1
+			else:
+				# Normal single shot
+				shoot_at_target()
+			
 			fire_timer = 0.0
 
 
@@ -273,9 +309,12 @@ func update_range_indicator():
 		if cylinder:
 			cylinder.top_radius = attack_range
 			cylinder.bottom_radius = attack_range
-		print("Tower range indicator updated to ", attack_range)
+		#print("Tower range indicator updated to ", attack_range)
 
 func create_level_lights():
+	# WALL TOWER - skip all combat logic
+	if tower_cost <= 25 and projectile_type == "None":
+		return  # Walls don't do anything
 	# Create 3 small cube lights on top of tower
 	for i in range(3):
 		var light = MeshInstance3D.new()
@@ -303,6 +342,9 @@ func create_level_lights():
 	update_level_lights()
 
 func update_level_lights():
+	# WALL TOWER - skip all combat logic
+	if tower_cost <= 25 and projectile_type == "None":
+		return  # Walls don't do anything
 	# Light up cubes based on tower level
 	for i in range(3):
 		if i < level_lights.size():
@@ -343,18 +385,18 @@ func apply_damage_to_target(target: Node3D):
 					if applies_slow and enemy.has_method("apply_slow"):
 						enemy.apply_slow(slow_amount, slow_duration)
 		
-		print("Tower (AoE): Hit ", hit_count, " enemies for ", damage, " damage each")
+		#print("Tower (AoE): Hit ", hit_count, " enemies for ", damage, " damage each")
 		
 	else:
 		# Single target damage
 		if target.has_method("take_damage"):
 			target.take_damage(damage, self)  # Pass tower reference
-			print("Tower: Shot enemy for ", damage, " damage")
+			#print("Tower: Shot enemy for ", damage, " damage")
 	
 		# Apply slow if this tower slows
 		if applies_slow and target.has_method("apply_slow"):
 			target.apply_slow(slow_amount, slow_duration)
-			print("Tower: Applied slow (", slow_amount, "x speed for ", slow_duration, "s)")
+			#print("Tower: Applied slow (", slow_amount, "x speed for ", slow_duration, "s)")
 
 # PROJECTILE FUNCTIONS
 
@@ -422,7 +464,7 @@ func launch_missile(target: Node3D, _active_barrel: Node3D = null):
 	mat.albedo_color = Color(0.8, 0.2, 0.2)
 	mat.emission_enabled = true
 	mat.emission = Color(1.0, 0.3, 0.0)
-	mat.emission_energy_multiplier = 1.5
+	mat.emission_energy_multiplier = 0.5
 	mesh_instance.set_surface_override_material(0, mat)
 	
 	missile.add_child(mesh_instance)
@@ -511,7 +553,7 @@ func create_damage_pulse():
 				apply_damage_to_target(enemy)
 				hit_count += 1
 	
-	print("Tower (Pulse): Hit ", hit_count, " enemies")
+	#print("Tower (Pulse): Hit ", hit_count, " enemies")
 	
 	# Animate pulse expanding outward (scale X and Z, keep Y thin)
 	var max_scale = attack_range  # Scale to match the range exactly

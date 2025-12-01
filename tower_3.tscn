@@ -2,19 +2,19 @@
 
 [ext_resource type="Script" uid="uid://27lep0nufffg" path="res://tower_1.gd" id="1_c7651"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4gdq"]
+albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yekfl"]
+material = SubResource("StandardMaterial3D_r4gdq")
+size = Vector3(1.5, 1, 1.5)
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2jaw"]
 albedo_color = Color(0, 0, 0, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_08ph3"]
 material = SubResource("StandardMaterial3D_h2jaw")
 size = Vector3(0.2, 0.6, 0.6)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6w48a"]
-albedo_color = Color(0.16206557, 0.1620656, 0.16206557, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_4s503"]
-material = SubResource("StandardMaterial3D_6w48a")
-size = Vector3(0.4, 0.2, 0.4)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c7651"]
 albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
@@ -23,12 +23,15 @@ albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
 material = SubResource("StandardMaterial3D_c7651")
 size = Vector3(0.4, 0.4, 1.2)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r4gdq"]
-albedo_color = Color(0.5411765, 0.5411765, 0.7372549, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6w48a"]
+albedo_color = Color(1, 0.58431375, 0, 1)
+emission_enabled = true
+emission = Color(1, 0.58383155, 0, 1)
+emission_energy_multiplier = 0.2
 
-[sub_resource type="BoxMesh" id="BoxMesh_yekfl"]
-material = SubResource("StandardMaterial3D_r4gdq")
-size = Vector3(1.5, 1, 1.5)
+[sub_resource type="BoxMesh" id="BoxMesh_4s503"]
+material = SubResource("StandardMaterial3D_6w48a")
+size = Vector3(0.3, 0.2, 0.3)
 
 [node name="Tower3" type="Node3D"]
 script = ExtResource("1_c7651")
@@ -40,26 +43,32 @@ area_of_effect = true
 projectile_type = "Missile"
 projectile_speed = 5.0
 
-[node name="Turret" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3511661, 0)
-mesh = SubResource("BoxMesh_08ph3")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.2996537, -0.003000021, 0.72030747)
-mesh = SubResource("BoxMesh_4s503")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.32306066, -0.003000021, 0.72030747)
-mesh = SubResource("BoxMesh_4s503")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0, 0)
-mesh = SubResource("BoxMesh_eb8cd")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.31023332, 0, 0)
-mesh = SubResource("BoxMesh_eb8cd")
-
 [node name="Base" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("BoxMesh_yekfl")
+
+[node name="Turret" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4048966, 0)
+
+[node name="TurretBody" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13445973, 0)
+mesh = SubResource("BoxMesh_08ph3")
+skeleton = NodePath("../..")
+
+[node name="BarrelLeft" type="MeshInstance3D" parent="Turret/TurretBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0.15543044, 0)
+mesh = SubResource("BoxMesh_eb8cd")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret/TurretBody/BarrelLeft"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.00032812357, -0.003000021, 0.6985772)
+mesh = SubResource("BoxMesh_4s503")
+skeleton = NodePath("../..")
+
+[node name="BarrelRight" type="MeshInstance3D" parent="Turret/TurretBody"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.31023332, 0.15543044, 0)
+mesh = SubResource("BoxMesh_eb8cd")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/TurretBody/BarrelRight"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.010579616, -0.003000021, 0.6985772)
+mesh = SubResource("BoxMesh_4s503")
+skeleton = NodePath("../..")

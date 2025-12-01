@@ -65,7 +65,7 @@ func _process(delta):
 func hit_target():
 	var ink_pos = global_position  
 	#spawn_ink_splash(ink_pos)
-	print("HIT_TARGET CALLED!")
+	#print("HIT_TARGET CALLED!")
 
 	if not tower or not is_instance_valid(tower):
 		queue_free()
@@ -116,9 +116,86 @@ func create_bullet_impact():
 		if is_instance_valid(spark):
 			spark.queue_free()
 	)
+#func create_missile_impact():
+	#var impact_position = global_position
+#
+	#var explosion = MeshInstance3D.new()
+	#var cube = BoxMesh.new()
+	#explosion.mesh = cube
+	#cube.size = Vector3(1, 1, 1)
+#
+	#var mat = StandardMaterial3D.new()
+	#mat.albedo_color = Color(1.0, 0.5, 0.0, 0.8)
+	#mat.emission_enabled = true
+	#mat.emission = Color(1.0, 0.3, 0.0)
+	#mat.emission_energy_multiplier = 2.0
+	#mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+#
+	#mat = mat.duplicate()
+	#mat.resource_local_to_scene = true
+	#explosion.set_surface_override_material(0, mat)
+#
+	#var explosion_pos = global_position
+	##explosion.global_position = impact_position
+	#get_parent().add_child(explosion)
+	#explosion.global_position = explosion_pos 
+	## Tween attached TO THE EXPLOSION itself!
+	#var tween = explosion.create_tween()
+	#tween.tween_property(explosion, "scale", Vector3(2.5, 2.5, 2.5), 0.3)
+	#tween.parallel().tween_property(explosion, "rotation", Vector3(PI, PI, PI), 0.3)
+	#tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.3)
+#
+	#tween.finished.connect(func():
+		#explosion.queue_free()
+	#)
 func create_missile_impact():
 	var impact_position = global_position
-
+	
+	# CHECK IF TOWER HAS AOE ENABLED
+	if tower and tower.get("area_of_effect"):
+		var has_aoe = tower.area_of_effect
+		
+		if has_aoe:
+			# Check if visual effects are enabled
+			var show_fx = tower.get("aoe_visual_effects")
+			if show_fx == null:
+				show_fx = true  # Default to true if not set
+			
+			if show_fx:
+				# Get AOE radius from tower
+				var aoe_radius = tower.get("aoe_radius")
+				if aoe_radius:
+					# Create big AOE explosion with particles
+					create_aoe_explosion(impact_position, aoe_radius)
+					return  # Skip regular explosion
+			else:
+				# AOE damage but no fancy FX - just simple explosion
+				var simple_explosion = MeshInstance3D.new()
+				var sphere = SphereMesh.new()
+				sphere.radius = 1.0
+				simple_explosion.mesh = sphere
+				
+				var mat = StandardMaterial3D.new()
+				mat.albedo_color = Color(1.0, 0.5, 0.0, 0.6)
+				mat.emission_enabled = true
+				mat.emission = Color(1.0, 0.3, 0.0)
+				mat.emission_energy_multiplier = 2.0
+				mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				simple_explosion.set_surface_override_material(0, mat)
+				
+				get_parent().add_child(simple_explosion)
+				simple_explosion.global_position = impact_position
+				
+				var tween = simple_explosion.create_tween()
+				tween.tween_property(simple_explosion, "scale", Vector3(3, 3, 3), 0.3)
+				tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.3)
+				tween.finished.connect(func():
+					if is_instance_valid(simple_explosion):
+						simple_explosion.queue_free()
+				)
+				return
+	
+	# REGULAR EXPLOSION (for non-AOE missiles)
 	var explosion = MeshInstance3D.new()
 	var cube = BoxMesh.new()
 	explosion.mesh = cube
@@ -130,24 +207,21 @@ func create_missile_impact():
 	mat.emission = Color(1.0, 0.3, 0.0)
 	mat.emission_energy_multiplier = 2.0
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-
 	mat = mat.duplicate()
 	mat.resource_local_to_scene = true
 	explosion.set_surface_override_material(0, mat)
 
-	var explosion_pos = global_position
-	#explosion.global_position = impact_position
 	get_parent().add_child(explosion)
-	explosion.global_position = explosion_pos 
-	# Tween attached TO THE EXPLOSION itself!
+	explosion.global_position = impact_position
+	
 	var tween = explosion.create_tween()
 	tween.tween_property(explosion, "scale", Vector3(2.5, 2.5, 2.5), 0.3)
 	tween.parallel().tween_property(explosion, "rotation", Vector3(PI, PI, PI), 0.3)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.3)
-
 	tween.finished.connect(func():
 		explosion.queue_free()
 	)
+
 func create_ice_impact():
 	# Store position once at the start
 	var impact_pos = global_position
@@ -269,8 +343,8 @@ func spawn_ink_splash(position: Vector3):
 func create_smoke_trail():
 	smoke_trail = GPUParticles3D.new()
 	smoke_trail.emitting = true
-	smoke_trail.amount = 40
-	smoke_trail.lifetime = 1.0
+	smoke_trail.amount = 80
+	smoke_trail.lifetime = 2.0
 	smoke_trail.local_coords = false  # Trail stays in world space
 	
 	var particle_mat = ParticleProcessMaterial.new()
@@ -279,8 +353,8 @@ func create_smoke_trail():
 	particle_mat.initial_velocity_min = 0.5
 	particle_mat.initial_velocity_max = 1.0
 	particle_mat.gravity = Vector3(0, -3.0, 0)
-	particle_mat.scale_min = 0.2
-	particle_mat.scale_max = 0.4
+	particle_mat.scale_min = 0.1
+	particle_mat.scale_max = 0.3
 	
 	# Gray smoke that fades
 	var gradient = Gradient.new()
@@ -298,3 +372,317 @@ func create_smoke_trail():
 	smoke_trail.draw_pass_1 = cube_mesh
 	
 	add_child(smoke_trail)
+
+
+func create_aoe_explosion(position: Vector3, radius: float = 5.0):
+	# Main explosion sphere (keep this the same)
+	var explosion = MeshInstance3D.new()
+	var sphere = SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	explosion.mesh = sphere
+	
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.5, 0.0, 0.8)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.3, 0.0)
+	mat.emission_energy_multiplier = 3.0
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	explosion.set_surface_override_material(0, mat)
+	
+	get_parent().add_child(explosion)
+	explosion.global_position = position
+	
+	# Animate explosion expanding
+	var tween = explosion.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(explosion, "scale", Vector3(radius * 2, radius * 2, radius * 2), 0.4)
+	tween.tween_property(mat, "albedo_color:a", 0.0, 0.4)
+	tween.finished.connect(func():
+		if is_instance_valid(explosion):
+			explosion.queue_free()
+	)
+	
+	# PHYSICS CUBES - shooting outward with gravity
+# PHYSICS CUBES - shooting outward with gravity
+	var cube_count = 30  # How many cubes
+	var cubes_to_impulse = []  # Store cubes to apply force after loop
+	
+	for i in range(cube_count):
+		# Create RigidBody3D for physics
+		var cube = RigidBody3D.new()
+		cube.mass = 0.2
+		cube.gravity_scale = 1.0  # Normal gravity
+		cube.linear_damp = 0.5  # Slight air resistance
+		cube.angular_damp = 0.5
+		
+		# Create mesh
+		var mesh_instance = MeshInstance3D.new()
+		var cube_mesh = BoxMesh.new()
+		var cube_size = randf_range(0.2, 0.4)
+		cube_mesh.size = Vector3(cube_size, cube_size, cube_size)
+		mesh_instance.mesh = cube_mesh
+		
+		# Material - light grey with emission
+		var cube_mat = StandardMaterial3D.new()
+		var brightness = randf_range(0.6, 0.9)  # Light grey
+		cube_mat.albedo_color = Color(brightness, brightness, brightness, 1.0)
+		cube_mat.emission_enabled = true
+		cube_mat.emission = Color(brightness * 0.8, brightness * 0.8, brightness * 0.8)
+		cube_mat.emission_energy_multiplier = 0.5
+		mesh_instance.set_surface_override_material(0, cube_mat)
+		
+		cube.add_child(mesh_instance)
+		
+		# Add collision shape
+		var collision = CollisionShape3D.new()
+		var box_shape = BoxShape3D.new()
+		box_shape.size = Vector3(cube_size, cube_size, cube_size)
+		collision.shape = box_shape
+		cube.add_child(collision)
+		
+		# Random starting rotation
+		cube.rotation = Vector3(
+			randf_range(0, TAU),
+			randf_range(0, TAU),
+			randf_range(0, TAU)
+		)
+		
+		get_parent().add_child(cube)
+		cube.global_position = position
+		
+		# Store cube and its direction/force for later
+		var direction = Vector3(
+			randf_range(-1, 1),
+			randf_range(0.3, 1.0),  # Bias upward
+			randf_range(-1, 1)
+		).normalized()
+		var force = randf_range(8.0, 15.0)
+		cubes_to_impulse.append({"cube": cube, "direction": direction, "force": force, "material": cube_mat})
+	
+	# Apply impulses AFTER all cubes are created
+	await get_tree().process_frame
+	for cube_data in cubes_to_impulse:
+		var cube = cube_data["cube"]
+		if is_instance_valid(cube):
+			cube.apply_central_impulse(cube_data["direction"] * cube_data["force"])
+			
+			# Add spin
+			cube.apply_torque_impulse(Vector3(
+				randf_range(-5, 5),
+				randf_range(-5, 5),
+				randf_range(-5, 5)
+			))
+			
+			# Fade out and remove
+			var cube_mat = cube_data["material"]
+			var fade_tween = cube.create_tween()
+			fade_tween.tween_property(cube_mat, "albedo_color:a", 0.0, 1.5).set_delay(1.0)
+			fade_tween.finished.connect(func():
+				if is_instance_valid(cube):
+					cube.queue_free()
+			)
+	
+	# SMOKE PARTICLES - rising up (keep this the same)
+	var smoke_particles = GPUParticles3D.new()
+	smoke_particles.emitting = true
+	smoke_particles.one_shot = true
+	smoke_particles.amount = 30
+	smoke_particles.lifetime = 1.5
+	smoke_particles.explosiveness = 0.8
+	
+	var smoke_mat = ParticleProcessMaterial.new()
+	smoke_mat.direction = Vector3(0, 1, 0)
+	smoke_mat.spread = 30.0
+	smoke_mat.initial_velocity_min = 3.0
+	smoke_mat.initial_velocity_max = 6.0
+	smoke_mat.gravity = Vector3(0, 2.0, 0)  # Rise up
+	smoke_mat.scale_min = 0.5
+	smoke_mat.scale_max = 1.2
+	
+	# Dark grey smoke
+	var smoke_gradient = Gradient.new()
+	smoke_gradient.set_color(0, Color(0.3, 0.3, 0.3, 0.8))
+	smoke_gradient.set_color(1, Color(0.1, 0.1, 0.1, 0.0))
+	var smoke_gradient_texture = GradientTexture1D.new()
+	smoke_gradient_texture.gradient = smoke_gradient
+	smoke_mat.color_ramp = smoke_gradient_texture
+	
+	smoke_particles.process_material = smoke_mat
+	var smoke_cube_mesh = BoxMesh.new()
+	smoke_cube_mesh.size = Vector3(0.4, 0.4, 0.4)
+	smoke_particles.draw_pass_1 = smoke_cube_mesh
+	
+	get_parent().add_child(smoke_particles)
+	smoke_particles.global_position = position + Vector3(0, 0.5, 0)
+	
+	# SHOCKWAVE RING (keep this the same)
+	var shockwave = MeshInstance3D.new()
+	var ring_mesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.1
+	ring_mesh.outer_radius = 0.5
+	shockwave.mesh = ring_mesh
+	
+	var ring_mat = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(1.0, 0.5, 0.0, 0.6)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.5, 0.0)
+	ring_mat.emission_energy_multiplier = 2.0
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shockwave.set_surface_override_material(0, ring_mat)
+	
+	get_parent().add_child(shockwave)
+	shockwave.global_position = position
+	shockwave.rotation.x = PI / 2  # Lay flat
+	
+	# Animate shockwave
+	var ring_tween = shockwave.create_tween()
+	ring_tween.set_parallel(true)
+	ring_tween.tween_property(shockwave, "scale", Vector3(radius * 4, radius * 4, 1.0), 0.5)
+	ring_tween.tween_property(ring_mat, "albedo_color:a", 0.0, 0.5)
+	ring_tween.finished.connect(func():
+		if is_instance_valid(shockwave):
+			shockwave.queue_free()
+	)
+	
+	# Auto cleanup smoke particles
+	await get_tree().create_timer(2.0).timeout
+	if is_instance_valid(smoke_particles):
+		smoke_particles.queue_free()
+	
+	
+#func create_aoe_explosion(position: Vector3, radius: float = 5.0):
+	## Main explosion sphere
+	#var explosion = MeshInstance3D.new()
+	#var sphere = SphereMesh.new()
+	#sphere.radius = 0.5
+	#sphere.height = 1.0
+	#explosion.mesh = sphere
+	#
+	#var mat = StandardMaterial3D.new()
+	#mat.albedo_color = Color(1.0, 0.5, 0.0, 0.8)
+	#mat.emission_enabled = true
+	#mat.emission = Color(1.0, 0.3, 0.0)
+	#mat.emission_energy_multiplier = 3.0
+	#mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#explosion.set_surface_override_material(0, mat)
+	#
+	#get_parent().add_child(explosion)
+	#explosion.global_position = position
+	#
+	## Animate explosion expanding
+	#var tween = explosion.create_tween()
+	#tween.set_parallel(true)
+	#tween.tween_property(explosion, "scale", Vector3(radius * 2, radius * 2, radius * 2), 0.4)
+	#tween.tween_property(mat, "albedo_color:a", 0.0, 0.4)
+	#tween.finished.connect(func():
+		#if is_instance_valid(explosion):
+			#explosion.queue_free()
+	#)
+	#
+	## FIRE PARTICLES - shooting outward
+	#var fire_particles = GPUParticles3D.new()
+	#fire_particles.emitting = true
+	#fire_particles.one_shot = true
+	#fire_particles.amount = 50
+	#fire_particles.lifetime = 0.8
+	#fire_particles.explosiveness = 1.0
+	#
+	#var fire_mat = ParticleProcessMaterial.new()
+	#fire_mat.direction = Vector3(0, 1, 0)
+	#fire_mat.spread = 180.0
+	#fire_mat.initial_velocity_min = 8.0
+	#fire_mat.initial_velocity_max = 15.0
+	#fire_mat.gravity = Vector3(0, -5.0, 0)
+	#fire_mat.scale_min = 0.3
+	#fire_mat.scale_max = 0.6
+	#
+	## Orange/red fire colors
+	#var fire_gradient = Gradient.new()
+	#fire_gradient.set_color(0, Color(1.0, 0.8, 0.2, 1.0))  # Bright yellow
+	#fire_gradient.set_color(0.5, Color(1.0, 0.3, 0.0, 0.8))  # Orange
+	#fire_gradient.set_color(1, Color(0.3, 0.0, 0.0, 0.0))  # Dark red fade
+	#var fire_gradient_texture = GradientTexture1D.new()
+	#fire_gradient_texture.gradient = fire_gradient
+	#fire_mat.color_ramp = fire_gradient_texture
+	#
+	#fire_particles.process_material = fire_mat
+	#
+	## Use cube mesh for particles
+	#var cube_mesh = BoxMesh.new()
+	#cube_mesh.size = Vector3(0.4, 0.4, 0.4)
+	#fire_particles.draw_pass_1 = cube_mesh
+	#
+	#get_parent().add_child(fire_particles)
+	#fire_particles.global_position = position
+	#
+	## SMOKE PARTICLES - rising up
+	#var smoke_particles = GPUParticles3D.new()
+	#smoke_particles.emitting = true
+	#smoke_particles.one_shot = true
+	#smoke_particles.amount = 30
+	#smoke_particles.lifetime = 1.5
+	#smoke_particles.explosiveness = 0.8
+	#
+	#var smoke_mat = ParticleProcessMaterial.new()
+	#smoke_mat.direction = Vector3(0, 1, 0)
+	#smoke_mat.spread = 30.0
+	#smoke_mat.initial_velocity_min = 3.0
+	#smoke_mat.initial_velocity_max = 6.0
+	#smoke_mat.gravity = Vector3(0, 2.0, 0)  # Rise up
+	#smoke_mat.scale_min = 0.5
+	#smoke_mat.scale_max = 1.2
+	#
+	## Dark grey smoke
+	#var smoke_gradient = Gradient.new()
+	#smoke_gradient.set_color(0, Color(0.3, 0.3, 0.3, 0.8))
+	#smoke_gradient.set_color(1, Color(0.1, 0.1, 0.1, 0.0))
+	#var smoke_gradient_texture = GradientTexture1D.new()
+	#smoke_gradient_texture.gradient = smoke_gradient
+	#smoke_mat.color_ramp = smoke_gradient_texture
+	#
+	#smoke_particles.process_material = smoke_mat
+	#smoke_particles.draw_pass_1 = cube_mesh
+	#
+	#get_parent().add_child(smoke_particles)
+	#smoke_particles.global_position = position + Vector3(0, 0.5, 0)
+	#
+	## SHOCKWAVE RING
+	#var shockwave = MeshInstance3D.new()
+	#var ring_mesh = TorusMesh.new()
+	#ring_mesh.inner_radius = 0.1
+	#ring_mesh.outer_radius = 0.5
+	#shockwave.mesh = ring_mesh
+	#
+	#var ring_mat = StandardMaterial3D.new()
+	#ring_mat.albedo_color = Color(1.0, 0.5, 0.0, 0.6)
+	#ring_mat.emission_enabled = true
+	#ring_mat.emission = Color(1.0, 0.5, 0.0)
+	#ring_mat.emission_energy_multiplier = 2.0
+	#ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	#ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#shockwave.set_surface_override_material(0, ring_mat)
+	#
+	#get_parent().add_child(shockwave)
+	#shockwave.global_position = position
+	#shockwave.rotation.x = PI / 2  # Lay flat
+	#
+	## Animate shockwave
+	#var ring_tween = shockwave.create_tween()
+	#ring_tween.set_parallel(true)
+	#ring_tween.tween_property(shockwave, "scale", Vector3(radius * 4, radius * 4, 1.0), 0.5)
+	#ring_tween.tween_property(ring_mat, "albedo_color:a", 0.0, 0.5)
+	#ring_tween.finished.connect(func():
+		#if is_instance_valid(shockwave):
+			#shockwave.queue_free()
+	#)
+	#
+	## Auto cleanup particles
+	#await get_tree().create_timer(2.0).timeout
+	#if is_instance_valid(fire_particles):
+		#fire_particles.queue_free()
+	#if is_instance_valid(smoke_particles):
+		#smoke_particles.queue_free()

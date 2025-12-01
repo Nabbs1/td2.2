@@ -41,20 +41,21 @@ size = Vector3(1.5, 1, 1.5)
 script = ExtResource("1_tgxvo")
 tower_cost = 175
 attack_range = 10.0
-damage = 30
+damage = 15
 fire_rate = 1.5
 area_of_effect = true
 flying_only = true
 projectile_type = "Missile"
 projectile_speed = 10.0
 projectile_scale = 0.5
+burst_fire = true
 
 [node name="Turret" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.9090471, 0.41669333, 0, -0.41669333, 0.9090471, 0, 1.4045978, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9090471, 0.41669333, 0, -0.41669333, 0.9090471, 0.006789863, 1.4045978, 0)
 mesh = SubResource("BoxMesh_08ph3")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, 0.36844474, 0.20055759, 0.72030747)
+transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, 0.38584363, 0.18846047, 0.697451)
 mesh = SubResource("BoxMesh_4s503")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/MeshInstance3D"]
@@ -74,7 +75,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.060937285, 0.07
 mesh = SubResource("BoxMesh_ibnc7")
 
 [node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, -0.31858438, 0.20055759, 0.72030747)
+transform = Transform3D(1, 0, 0, 0, -2.9802322e-08, -1, 0, 1, -2.9802322e-08, -0.38942793, 0.20055759, 0.72030747)
 mesh = SubResource("BoxMesh_4s503")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/MeshInstance3D2"]
@@ -94,11 +95,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07689178, 0.060937285, 0.07
 mesh = SubResource("BoxMesh_ibnc7")
 
 [node name="MeshInstance3D3" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0.17418313, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.39256454, 0.17418313, 5.9604645e-08)
 mesh = SubResource("BoxMesh_eb8cd")
 
 [node name="MeshInstance3D4" type="MeshInstance3D" parent="Turret"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4234695, 0.17002487, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3956404, 0.17002475, 0)
 mesh = SubResource("BoxMesh_eb8cd")
 
 [node name="Base" type="MeshInstance3D" parent="."]

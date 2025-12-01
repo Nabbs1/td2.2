@@ -22,6 +22,7 @@ extends Node3D
 @export var roughness: float = 0.7
 
 @export_group("Tower Scenes")
+@export var tower_0_scene: PackedScene
 @export var tower_1_scene: PackedScene
 @export var tower_2_scene: PackedScene
 @export var tower_3_scene: PackedScene
@@ -51,8 +52,7 @@ var fps_label: Label
 # Tower selection
 var selected_tower_type: int = 0
 var tower_scenes: Array = []
-var tower_names: Array = ["Basic", "Rapid Fire", "Missles", "Anti-Air", "Ice", "Pulse"]
-
+var tower_names: Array = ["Wall", "Basic", "Rapid Fire", "Missles", "Anti-Air", "Ice", "Pulse"]
 # Wave system
 var current_wave: int = 0
 var enemies_in_wave: int = 0
@@ -108,6 +108,7 @@ func _ready():
 	load_high_scores() 
 	 
 	tower_scenes = [
+		tower_0_scene,
 		tower_1_scene,
 		tower_2_scene,
 		tower_3_scene,
@@ -205,8 +206,8 @@ func setup_tower_ui():
 	hbox.grow_vertical = Control.GROW_DIRECTION_BEGIN
 	
 	# Create 6 tower buttons
-	for i in range(6):
-		var tower_button = create_tower_button(i + 1)
+	for i in range(7):
+		var tower_button = create_tower_button(i)
 		hbox.add_child(tower_button)
 	
 	add_child(hbox)
@@ -533,11 +534,15 @@ func add_lighting():
 
 func _input(event):
 	if event is InputEventKey and event.pressed:
-		if event.keycode >= KEY_1 and event.keycode <= KEY_6:
+		# Handle 0 key separately for wall tower
+		if event.keycode == KEY_0:
+			selected_tower_type = 0
+			var button = get_node_or_null("TowerButtonContainer/TowerButton0")
+			if button:
+				button.grab_focus()
+		# Handle 1-6 for other towers
+		elif event.keycode >= KEY_1 and event.keycode <= KEY_6:
 			selected_tower_type = event.keycode - KEY_0
-			#print("Main: Selected tower type ", selected_tower_type)
-			
-			# Move focus to the hotkey-selected button
 			var button = get_node_or_null("TowerButtonContainer/TowerButton" + str(selected_tower_type))
 			if button:
 				button.grab_focus()
@@ -584,19 +589,19 @@ func _input(event):
 					cancel_tower_selection()
 
 func get_selected_tower_scene() -> PackedScene:
-	if selected_tower_type < 1 or selected_tower_type > 6:
+	if selected_tower_type < 0 or selected_tower_type > 6:  # Changed from 1-6 to 0-6
 		return null
-	return tower_scenes[selected_tower_type - 1]
+	return tower_scenes[selected_tower_type]  #
 
 func place_tower():
-	if selected_tower_type == 0:
+	if selected_tower_type < 0:  # Changed from == 0
 		return
 	
-	if selected_tower_type < 1 or selected_tower_type > 6:
+	if selected_tower_type < 0 or selected_tower_type > 6:  # Changed range
 		#print("Main: Invalid tower type selected")
 		return
 	
-	var tower_scene = tower_scenes[selected_tower_type - 1]
+	var tower_scene = tower_scenes[selected_tower_type]
 	if not tower_scene:
 		#print("Main: Tower ", selected_tower_type, " scene not assigned!")
 		return
@@ -641,7 +646,7 @@ func place_tower():
 			print("Main: Cannot place tower - cell occupied or invalid")
 
 func cancel_tower_selection():
-	selected_tower_type = 0
+	selected_tower_type = -1
 	#print("Main: Tower selection cancelled")
 	
 	if grid:
@@ -761,11 +766,11 @@ func _on_enemy_died(enemy: Node3D):
 			player_gold += gold_reward
 			player_score += gold_reward
 			player_kills += 1
-			print("Enemy killed! +", gold_reward, " gold. Total: ", player_gold)
+			#print("Enemy killed! +", gold_reward, " gold. Total: ", player_gold)
 
 func _on_enemy_reached_goal(damage: int):
 	player_health -= damage
-	print("Player took ", damage, " damage! Health: ", player_health, "/", max_player_health)
+	#print("Player took ", damage, " damage! Health: ", player_health, "/", max_player_health)
 	
 	if goal_bunker:
 		flash_goal_bunker()
@@ -830,7 +835,7 @@ func flash_goal_bunker():
 	#restart_button.pressed.connect(_on_restart_button_pressed)
 	#add_child(restart_button)
 func game_over():
-	print("GAME OVER!")
+	#print("GAME OVER!")
 	player_health = 0
 	
 	# Play game over sound
@@ -1192,6 +1197,12 @@ func update_tower_hover():
 			tower_stats_label.visible = false
 
 func show_tower_stats(tower: Node3D):
+	  # Don't show stats for wall towers
+	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
+	if tower_cost <= 25:  # Wall tower
+		if tower_stats_label:
+			tower_stats_label.visible = false
+		return
 	# Create stats label if it doesn't exist
 	if not tower_stats_label:
 		tower_stats_label = Label3D.new()
@@ -1216,7 +1227,7 @@ func show_tower_stats(tower: Node3D):
 	var damage = tower.get("damage") if tower.get("damage") else "?"
 	var attack_range = tower.get("attack_range") if tower.get("attack_range") else "?"
 	var fire_rate = tower.get("fire_rate") if tower.get("fire_rate") else "?"
-	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else "?"
+	#var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else "?"
 	var kill_count = tower.get("kill_count") if tower.get("kill_count") else 0
 	var sell_value = int(tower_cost * 0.75) if tower_cost is int else "?"
 	
@@ -1266,10 +1277,16 @@ func show_tower_cards(tower: Node3D):
 	# Close existing cards first
 	close_tower_cards()
 	
-	# Get tower level
+	# Get tower level and cost
 	var tower_level = tower.get("tower_level") if tower.get("tower_level") else 0
+	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
 	var max_level = 3
 	
+	# WALL TOWERS - only show sell card, no upgrades
+	if tower_cost <= 25:  # Walls are cheap
+		sell_card = create_tower_ui_card(tower, "SELL", false)
+		add_child(sell_card)
+		return  # Don't create upgrade card
 	# Create upgrade card
 	if tower_level < max_level:
 		upgrade_card = create_tower_ui_card(tower, "UPGRADE", true)
@@ -1395,7 +1412,7 @@ func create_tower_ui_card(tower: Node3D, card_type: String, is_upgrade: bool) ->
 	var tower_ref = tower
 	button.pressed.connect(func():
 		if not tower_ref or not is_instance_valid(tower_ref):
-			print("Tower no longer valid")
+			#print("Tower no longer valid")
 			close_tower_cards()
 			return
 		
@@ -1414,7 +1431,7 @@ func try_click_tower_card() -> bool:
 
 func upgrade_tower(tower: Node3D):
 	if not tower or not is_instance_valid(tower):
-		print("Invalid tower reference")
+		#print("Invalid tower reference")
 		return
 	
 	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
@@ -1424,12 +1441,12 @@ func upgrade_tower(tower: Node3D):
 	
 	# Check max level
 	if tower_level >= 3:
-		print("Tower already at max level!")
+		#print("Tower already at max level!")
 		return
 	
 	# Check if can afford
 	if player_gold < upgrade_cost:
-		print("Can't afford upgrade! Need ", upgrade_cost, " gold, have ", player_gold)
+		#print("Can't afford upgrade! Need ", upgrade_cost, " gold, have ", player_gold)
 		return
 	
 	# Pay cost
@@ -1447,10 +1464,10 @@ func upgrade_tower(tower: Node3D):
 	tower.set("attack_range", current_range + 2.0)
 	tower.set("fire_rate", current_fire_rate * 1.25)
 	
-	print("Tower upgraded to level ", tower_level + 1)
-	print("  Damage: ", current_damage, " -> ", int(current_damage * 1.5))
-	print("  Range: ", current_range, " -> ", current_range + 2.0)
-	print("  Fire Rate: ", current_fire_rate, " -> ", current_fire_rate * 1.25)
+	#print("Tower upgraded to level ", tower_level + 1)
+	#print("  Damage: ", current_damage, " -> ", int(current_damage * 1.5))
+	#print("  Range: ", current_range, " -> ", current_range + 2.0)
+	#print("  Fire Rate: ", current_fire_rate, " -> ", current_fire_rate * 1.25)
 	
 	# Update range indicator visual
 	if tower.has_method("update_range_indicator"):
@@ -1465,7 +1482,7 @@ func upgrade_tower(tower: Node3D):
 
 func sell_tower_from_card(tower: Node3D):
 	if not tower or not is_instance_valid(tower):
-		print("Invalid tower reference")
+		#print("Invalid tower reference")
 		return
 	
 	# Calculate refund - use current level's total cost
@@ -1481,7 +1498,7 @@ func sell_tower_from_card(tower: Node3D):
 	var tower_position = tower.global_position
 	
 	player_gold += refund
-	print("Tower sold for ", refund, " gold (level ", tower_level, ")")
+	#print("Tower sold for ", refund, " gold (level ", tower_level, ")")
 	
 	# Show floating sold text
 	create_sold_text(tower_position, refund)
@@ -1493,7 +1510,7 @@ func sell_tower_from_card(tower: Node3D):
 			# Check if cell contains our tower (handle both Node3D and string "rock")
 			if cell_value is Node3D and cell_value == tower:
 				grid.grid_data[x][y] = null
-				print("Removed tower from grid at ", x, ",", y)
+				#print("Removed tower from grid at ", x, ",", y)
 				break
 	
 	tower.queue_free()
@@ -1526,7 +1543,7 @@ func create_start_button():
 	add_child(start_button)
 
 func _on_start_button_pressed():
-	print("Game started!")
+	#print("Game started!")
 	game_started = true
 	
 	if start_button:
@@ -1535,10 +1552,9 @@ func _on_start_button_pressed():
 	
 	await get_tree().create_timer(2.0).timeout
 	start_next_wave()
-
 func create_tower_button(tower_index: int) -> Control:
 	var button = Button.new()
-	button.name = "TowerButton" + str(tower_index)
+	button.name = "TowerButton" + str(tower_index)  # TowerButton0, TowerButton1, etc
 	button.custom_minimum_size = Vector2(100, 100)
 	button.set_meta("tower_index", tower_index)
 	
@@ -1562,9 +1578,7 @@ func create_tower_button(tower_index: int) -> Control:
 	
 	# Load tower icon
 	var icon_path = "res://icons/tower_" + str(tower_index) + "_icon.png"
-	#if FileAccess.file_exists(icon_path):
 	var texture = load(icon_path)
-	#	if texture:
 	icon.texture = texture
 	
 	margin.add_child(icon)
@@ -1581,7 +1595,7 @@ func create_tower_button(tower_index: int) -> Control:
 	
 	# Tower name with thick outline
 	var name_label = Label.new()
-	name_label.text = tower_names[tower_index - 1]
+	name_label.text = tower_names[tower_index]  # Changed from tower_index - 1
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 12)
 	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
@@ -1600,7 +1614,7 @@ func create_tower_button(tower_index: int) -> Control:
 	cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	# Get cost from tower scene
-	var tower_scene = tower_scenes[tower_index - 1]
+	var tower_scene = tower_scenes[tower_index]  # Changed from tower_index - 1
 	if tower_scene:
 		var temp_tower = tower_scene.instantiate()
 		var tower_cost = temp_tower.get("tower_cost")
@@ -1613,7 +1627,7 @@ func create_tower_button(tower_index: int) -> Control:
 	
 	# Hotkey label with thick outline
 	var hotkey_label = Label.new()
-	hotkey_label.text = "[" + str(tower_index) + "]"
+	hotkey_label.text = "[" + str(tower_index) + "]"  # Show [0], [1], [2], etc
 	hotkey_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hotkey_label.add_theme_font_size_override("font_size", 11)
 	hotkey_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
@@ -1628,18 +1642,17 @@ func create_tower_button(tower_index: int) -> Control:
 	button.pressed.connect(_on_tower_button_pressed.bind(tower_index))
 	
 	return button
-
 func _on_tower_button_pressed(tower_index: int):
 	selected_tower_type = tower_index
-	print("Tower button pressed: ", tower_index)
+	#print("Tower button pressed: ", tower_index)
 
 func update_tower_buttons():
-	for i in range(1, 7):
+	for i in range(0, 7):  # Changed from range(1, 8)
 		var button = get_node_or_null("TowerButtonContainer/TowerButton" + str(i))
 		if not button:
 			continue
 		
-		var tower_scene = tower_scenes[i - 1]
+		var tower_scene = tower_scenes[i]  # Changed from i - 1
 		if not tower_scene:
 			continue
 		
@@ -1984,7 +1997,7 @@ func create_speed_controls():
 func _on_speed_button_pressed(speed: float):
 	game_speed = speed
 	Engine.time_scale = speed
-	print("Game speed set to ", speed, "x")
+	#print("Game speed set to ", speed, "x")
 	
 	# Update button highlights
 	update_speed_button_highlights()
@@ -2021,7 +2034,7 @@ func save_high_scores():
 	config.set_value("highscores", "kills", high_score_kills)
 	config.set_value("highscores", "points", high_score_points)
 	config.save("user://highscores.cfg")
-	print("High scores saved: Wave ", high_score_wave, ", Kills ", high_score_kills, ", Points ", high_score_points)
+	#print("High scores saved: Wave ", high_score_wave, ", Kills ", high_score_kills, ", Points ", high_score_points)
 
 func load_high_scores():
 	var config = ConfigFile.new()
@@ -2031,9 +2044,9 @@ func load_high_scores():
 		high_score_wave = config.get_value("highscores", "wave", 0)
 		high_score_kills = config.get_value("highscores", "kills", 0)
 		high_score_points = config.get_value("highscores", "points", 0)
-		print("High scores loaded: Wave ", high_score_wave, ", Kills ", high_score_kills, ", Points ", high_score_points)
-	else:
-		print("No high scores file found, starting fresh")
+		#print("High scores loaded: Wave ", high_score_wave, ", Kills ", high_score_kills, ", Points ", high_score_points)
+	#else:
+		#print("No high scores file found, starting fresh")
 
 func update_high_scores():
 	var updated = false

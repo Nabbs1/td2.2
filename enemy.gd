@@ -329,7 +329,7 @@ func get_target_position() -> Vector3:
 	if is_flying:
 		# For flying enemies, return a position at ground level
 		var target_pos = global_position
-		target_pos.y = 0.5  # Hit at base level, not at flying height
+		#target_pos.y = 0.5  # Hit at base level, not at flying height
 		return target_pos
 	else:
 		# For ground enemies, return center position
