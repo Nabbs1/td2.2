@@ -55,20 +55,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13445973, 0)
 mesh = SubResource("BoxMesh_08ph3")
 skeleton = NodePath("../..")
 
-[node name="BarrelLeft" type="MeshInstance3D" parent="Turret/TurretBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0.15543044, 0)
+[node name="LBarrelLeft" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.32273254, 0.020970702, 0)
 mesh = SubResource("BoxMesh_eb8cd")
+skeleton = NodePath("../TurretBody")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Turret/TurretBody/BarrelLeft"]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.00032812357, -0.003000021, 0.6985772)
-mesh = SubResource("BoxMesh_4s503")
-skeleton = NodePath("../..")
-
-[node name="BarrelRight" type="MeshInstance3D" parent="Turret/TurretBody"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.31023332, 0.15543044, 0)
+[node name="RBarrelRight" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.31023332, 0.020970702, 0)
 mesh = SubResource("BoxMesh_eb8cd")
+skeleton = NodePath("../TurretBody")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Turret/TurretBody/BarrelRight"]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.010579616, -0.003000021, 0.6985772)
+[node name="BarrelRight" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0.2996537, 0.017970681, 0.6985772)
 mesh = SubResource("BoxMesh_4s503")
-skeleton = NodePath("../..")
+skeleton = NodePath("../TurretBody")
+
+[node name="BarrelLeft" type="MeshInstance3D" parent="Turret"]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -0.32306066, 0.017970681, 0.6985772)
+mesh = SubResource("BoxMesh_4s503")
+skeleton = NodePath("../TurretBody")

@@ -129,9 +129,9 @@ func create_path_visual():
 	
 	var material = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(1.0, 0.0, 0.0, 1.0)
+	material.albedo_color = Color(1.0, 0.0, 0.0, 0.2)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
-	material.no_depth_test = true
+	material.no_depth_test = false
 	#path_visual.set_surface_override_material(0, material)
 	path_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	
@@ -166,9 +166,9 @@ func update_path_visual():
 	
 	var material = StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(1.0, 0.0, 0.0, 1.0)
+	material.albedo_color = Color(1.0, 0.0, 0.0, 0.2)
 	material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
-	material.no_depth_test = true
+	material.no_depth_test = false
 	path_visual.set_surface_override_material(0, material)
 	
 	create_path_markers()
@@ -208,7 +208,7 @@ func create_path_markers():
 	end_mesh.bottom_radius = 0.7
 	end_mesh.height = 1.0
 	end_marker.mesh = end_mesh
-	
+	end_marker.visible = false
 	var end_mat = StandardMaterial3D.new()
 	end_mat.albedo_color = Color(1.0, 0.2, 0.2)
 	end_mat.emission_enabled = true

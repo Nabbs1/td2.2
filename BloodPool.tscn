@@ -1,0 +1,26 @@
+[gd_scene load_steps=7 format=3 uid="uid://bmoi1iqvsg0g5"]
+
+[ext_resource type="Shader" uid="uid://dbeteop6uk5g2" path="res://bloody_pool.tres" id="1_p1ghq"]
+[ext_resource type="Texture2D" uid="uid://xhpck5f3w2wn" path="res://ink3.png" id="2_2iot4"]
+[ext_resource type="Texture2D" uid="uid://djvp0rgp7vh03" path="res://textures/floor_albedo.png" id="3_2iot4"]
+[ext_resource type="Script" uid="uid://vb2ts7qjgs6a" path="res://blood_pool.gd" id="3_whce0"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_85t35"]
+size = Vector2(60, 60)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_33r4k"]
+render_priority = 0
+shader = ExtResource("1_p1ghq")
+shader_parameter/floor_texture = ExtResource("3_2iot4")
+shader_parameter/blood_texture = ExtResource("2_2iot4")
+shader_parameter/blood_color = Color(0, 0, 0, 1)
+shader_parameter/blood_merge_factor = 1.0
+shader_parameter/blood_density_on_heightmap = true
+shader_parameter/positions = PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/scales = PackedFloat32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="BloodPool" type="MeshInstance3D"]
+layers = 2
+mesh = SubResource("PlaneMesh_85t35")
+surface_material_override/0 = SubResource("ShaderMaterial_33r4k")
+script = ExtResource("3_whce0")

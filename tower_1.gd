@@ -48,7 +48,7 @@ var burst_timer: float = 0.0
 var is_bursting: bool = false
 # Range indicator (for debugging/visualization)
 var range_indicator: MeshInstance3D
-
+var shoot_sound: AudioStreamPlayer3D
 # Upgrade level indicators
 var level_lights: Array = []
 
@@ -60,10 +60,10 @@ func _ready():
 		# Find the barrel node
 	barrel = get_node_or_null("Turret/Barrel")  # ADD THIS
 	if not barrel:
-		push_error("Tower: No 'Barrel' node found! Recoil animation won't work")
-	if not barrel:
 		barrel_left = get_node_or_null("Turret/BarrelLeft")
 		barrel_right = get_node_or_null("Turret/BarrelRight")
+		#if not barrel_left and not barrel_right:
+			#push_error("Tower: No barrel nodes found! Recoil animation won't work")
 	# Create range indicator
 	create_range_indicator()
 	# ADD THESE FOR PULSE TOWER
@@ -74,7 +74,12 @@ func _ready():
 		create_pulse_idle_glow()
 	# Create level indicator lights
 	create_level_lights()
-	
+		# Create shoot sound
+	shoot_sound = AudioStreamPlayer3D.new()
+	shoot_sound.stream = load("res://sounds/POP.wav")  # Your sound file
+	shoot_sound.volume_db = -5.0  # Adjust volume
+	shoot_sound.max_distance = 10.0
+	add_child(shoot_sound)
 	# Add to towers group so enemies can find us
 	add_to_group("towers")
 
@@ -199,6 +204,7 @@ func shoot_at_target():
 	# Launch projectile
 	match projectile_type:
 		"Bullet":
+			shoot_sound.play()
 			launch_bullet(current_target, active_barrel)
 		"Missile":
 			launch_missile(current_target, active_barrel)
@@ -293,7 +299,7 @@ func create_range_indicator():
 	range_indicator.position.y = 0.1
 	range_indicator.visible = false  # Hidden by default
 	add_child(range_indicator)
-
+	print("Created range indicator for tower, radius: ", attack_range)
 func show_range():
 	if range_indicator:
 		range_indicator.visible = true
@@ -428,7 +434,7 @@ func launch_bullet(target: Node3D, active_barrel: Node3D = null):
 	# Spawn from active barrel
 	var spawn_pos
 	if active_barrel:
-		spawn_pos = active_barrel.global_position + active_barrel.global_transform.basis.z * 1.0
+		spawn_pos = active_barrel.global_position + active_barrel.global_transform.basis.z * 0.1
 	else:
 		# Fallback to turret center
 		spawn_pos = turret.global_position + turret.global_transform.basis.z * 0.8

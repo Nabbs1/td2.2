@@ -234,14 +234,26 @@ func die():
 	
 	is_alive = false
 	#print("Enemy died!")
+	var death_position = global_position  # Store position before removal
 	
+	
+	var main = get_tree().current_scene
+	var blood_pool = main.get_node_or_null("BloodPool")
+	#print("Looking for BloodPool, found: ", blood_pool)
+	if blood_pool and blood_pool.has_method("drop_at"):
+		# Direct UV coordinates (0 to 1)
+		var uv_x = (global_position.x + 30.0) / 60.0
+		var uv_z = (global_position.z + 30.0) / 60.0
+		var pos_uv = Vector2(uv_x, uv_z)
+		#print("Dropping blood at UV: ", pos_uv, " from world pos: ", global_position)
+		blood_pool.drop_at(pos_uv)
 		# Increment kill count for the tower that killed us
 	if last_tower_hit and is_instance_valid(last_tower_hit):
 		if last_tower_hit.get("kill_count") != null:
 			last_tower_hit.kill_count += 1
 	# Emit signal before death effects
 	enemy_died.emit(self)
-	var death_position = global_position  # Store position before removal
+
 	
 	# Death shatter effect
 	if enable_death_shatter:
@@ -254,7 +266,16 @@ func die():
 func reach_goal():
 	# Enemy reached the end - player loses life
 	#print("Enemy reached goal! Dealing ", damage_to_player, " damage")
-	enemy_reached_goal.emit(damage_to_player)
+	var explosion_damage = health / 2.0
+	enemy_reached_goal.emit(explosion_damage)
+	# Get Main node for explosion visual
+	var main = get_tree().current_scene
+	if main:
+		var explosion = load("res://explosion.tscn").instantiate()
+		main.add_child(explosion)
+		explosion.global_position = global_position
+		if explosion.has_method("explode"):
+			explosion.explode()
 	queue_free()
 
 func apply_slow(slow_multiplier: float, duration: float):

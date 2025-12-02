@@ -43,14 +43,14 @@ extends Node3D
 @export_group("Enemy Spawning")
 @export var wave_duration: float = 30.0
 @export var wave_break_time: float = 5.0
-@export var player_gold: int = 100
+
 var grid: Node3D
 var path_system: Node3D
 var spawn_timer: Timer
 var fps_label: Label
 
 # Tower selection
-var selected_tower_type: int = 0
+var selected_tower_type: int = -1
 var tower_scenes: Array = []
 var tower_names: Array = ["Wall", "Basic", "Rapid Fire", "Missles", "Anti-Air", "Ice", "Pulse"]
 # Wave system
@@ -62,7 +62,7 @@ var wave_label: Label
 var between_waves: bool = false
 var next_wave_countdown: int = 0
 var countdown_timer: Timer
-
+var last_hovered_tower: Node3D = null
 # Economy and score
 #var player_gold: int = 100
 var player_score: int = 0
@@ -74,8 +74,12 @@ var high_score_wave: int = 0
 var high_score_kills: int = 0
 var high_score_points: int = 0
 # Player health
-var player_health: int = 20
-var max_player_health: int = 20
+@export_group("Player Stuff")
+@export var player_health: int = 20
+@export var max_player_health: int = 20
+
+@export var player_gold: int = 100
+
 var health_label: Label
 var goal_bunker: Node3D = null
 var goal_health_bar_bg: MeshInstance3D = null
@@ -103,7 +107,7 @@ func _ready():
 	if not use_random_seed:
 		seed(terrain_seed)
 	
-	
+
 	
 	load_high_scores() 
 	 
@@ -147,7 +151,12 @@ func _ready():
 	grid.path_system = path_system
 	
 	var start_pos = Vector2i(0, grid.grid_height / 2)
-	var end_pos = Vector2i(grid.grid_width - 1, grid.grid_height / 2)
+	#var end_pos = Vector2i(grid.grid_width - 1, grid.grid_height / 2)
+	# Convert world position to grid position
+	var target_world_pos = Vector3(27, 0, 1)
+	var end_pos = grid.world_to_grid(target_world_pos)
+	
+	
 	path_system.initialize(grid, start_pos, end_pos)
 	
 	setup_spawner()
@@ -264,8 +273,8 @@ func _process(_delta):
 	# Update tower buttons
 	update_tower_buttons()
 	
-	# Update tower hover range display
-	update_tower_hover()
+	
+	update_tower_selection()
 	
 	# Update 3D wave label
 	update_wave_label_3d()
@@ -925,7 +934,7 @@ func create_goal_bunker():
 	
 	var core = MeshInstance3D.new()
 	var core_box = BoxMesh.new()
-	core_box.size = Vector3(1.0, 1.0, 1.0)
+	core_box.size = Vector3(-1.0, 1.0, 1.0)
 	core.mesh = core_box
 	core.position.y = 2.5
 	
@@ -1144,66 +1153,87 @@ func update_wave_label_3d():
 	elif wave_label_3d:
 		wave_label_3d.visible = false
 
-func update_tower_hover():
-	# Hide hover stats when tower is selected or building
-	if selected_tower or selected_tower_type != 0:
-		if tower_stats_label:
-			tower_stats_label.visible = false
-		# Hide all tower ranges when building
-		if selected_tower_type != 0:
-			for tower in get_tree().get_nodes_in_group("towers"):
-				if tower.has_method("hide_range"):
-					tower.hide_range()
-		return
-	
-	# Raycast to find tower under mouse
-	var camera = get_viewport().get_camera_3d()
-	if not camera:
-		return
-	
-	var mouse_pos = get_viewport().get_mouse_position()
-	var from = camera.project_ray_origin(mouse_pos)
-	var to = from + camera.project_ray_normal(mouse_pos) * 1000
-	
-	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	var result = space_state.intersect_ray(query)
-	
-	var hovered_tower = null
-	
-	if result:
-		var grid_pos = grid.world_to_grid(result.position)
-		
-		if grid.is_valid_grid_position(grid_pos) and grid.is_cell_occupied(grid_pos):
-			var tower = grid.grid_data[grid_pos.x][grid_pos.y]
-			
-			# Check if it's actually a tower
-			if tower and tower is Node3D and tower.is_in_group("towers"):
-				hovered_tower = tower
-	
-	# Update all towers - show range only for hovered tower
-	for tower in get_tree().get_nodes_in_group("towers"):
-		if tower.has_method("show_range") and tower.has_method("hide_range"):
-			if tower == hovered_tower:
-				tower.show_range()
-			else:
-				tower.hide_range()
-	
-	# Show/update stats label for hovered tower
-	if hovered_tower:
-		show_tower_stats(hovered_tower)
-	else:
-		if tower_stats_label:
-			tower_stats_label.visible = false
+#func update_tower_hover():
+	## Hide hover stats when tower is selected or building
+	#if selected_tower or selected_tower_type != 0:
+		#if tower_stats_label:
+			#tower_stats_label.visible = false
+		## Hide all tower ranges when building (but NOT when a tower is selected)
+		#if selected_tower_type != 0:
+			#for tower in get_tree().get_nodes_in_group("towers"):
+				#if tower.has_method("hide_range"):
+					#tower.hide_range()
+			#return  # Only return if building
+		## If selected_tower exists, keep its range visible
+		#if selected_tower and selected_tower.has_method("show_range"):
+			#selected_tower.show_range()
+		#return
+	#
+	## Raycast to find tower under mouse
+	#var camera = get_viewport().get_camera_3d()
+	#if not camera:
+		#return
+	#
+	#var mouse_pos = get_viewport().get_mouse_position()
+	#var from = camera.project_ray_origin(mouse_pos)
+	#var to = from + camera.project_ray_normal(mouse_pos) * 1000
+	#
+	#var space_state = get_world_3d().direct_space_state
+	#var query = PhysicsRayQueryParameters3D.create(from, to)
+	#var result = space_state.intersect_ray(query)
+	#
+	#var hovered_tower = null
+	#
+	#if result:
+		#var grid_pos = grid.world_to_grid(result.position)
+		#
+		#if grid.is_valid_grid_position(grid_pos) and grid.is_cell_occupied(grid_pos):
+			#var tower = grid.grid_data[grid_pos.x][grid_pos.y]
+			#
+			## Check if it's actually a tower
+			#if tower and tower is Node3D and tower.is_in_group("towers"):
+				#hovered_tower = tower
+	#
+	## Update all towers - show range only for hovered tower
+	#for tower in get_tree().get_nodes_in_group("towers"):
+		#if tower.has_method("show_range") and tower.has_method("hide_range"):
+			#if tower == hovered_tower:
+				#tower.show_range()
+			#else:
+				#tower.hide_range()
+	#
+	## Show/update stats label for hovered tower
+	#if hovered_tower:
+		#show_tower_stats(hovered_tower)
+	#else:
+		#if tower_stats_label:
+			#tower_stats_label.visible = false
 
-func show_tower_stats(tower: Node3D):
-	  # Don't show stats for wall towers
-	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
-	if tower_cost <= 25:  # Wall tower
-		if tower_stats_label:
-			tower_stats_label.visible = false
+func update_tower_selection():
+		# PLACING MODE: Hide stats when building
+	if selected_tower_type >= 1 and selected_tower_type <= 6:
+		hide_tower_ui()
 		return
-	# Create stats label if it doesn't exist
+	
+	# SELECTED MODE: Show range and stats for selected tower
+	if selected_tower:
+		if selected_tower.has_method("show_range"):
+			selected_tower.show_range()
+		show_tower_stats(selected_tower)
+	else:
+		# Nothing selected - hide everything
+		hide_tower_ui()
+		
+func hide_tower_ui():
+	# Hide stats label
+	if tower_stats_label:
+		tower_stats_label.visible = false
+	
+	# Hide selected tower range
+	if selected_tower and selected_tower.has_method("hide_range"):
+		selected_tower.hide_range()			
+func show_tower_stats(tower: Node3D):
+
 	if not tower_stats_label:
 		tower_stats_label = Label3D.new()
 		tower_stats_label.pixel_size = 0.005
@@ -1224,13 +1254,13 @@ func show_tower_stats(tower: Node3D):
 		add_child(tower_stats_label)
 	
 	# Get tower stats
-	var damage = tower.get("damage") if tower.get("damage") else "?"
-	var attack_range = tower.get("attack_range") if tower.get("attack_range") else "?"
-	var fire_rate = tower.get("fire_rate") if tower.get("fire_rate") else "?"
-	#var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else "?"
+	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
+	var damage = tower.get("damage") if tower.get("damage") else 0  # Changed from "?"
+	var attack_range = tower.get("attack_range") if tower.get("attack_range") else 0  # Changed from "?"
+	var fire_rate = tower.get("fire_rate") if tower.get("fire_rate") else 0.0  # Changed from "?"
 	var kill_count = tower.get("kill_count") if tower.get("kill_count") else 0
-	var sell_value = int(tower_cost * 0.75) if tower_cost is int else "?"
-	
+	var sell_value = int(tower_cost * 0.75) if tower_cost is int else 0  # Changed from "?"
+
 	# Build stats text
 	var stats_text = ""
 	stats_text += "Damage: " + str(int(damage)) + "\n"
@@ -1275,8 +1305,20 @@ func try_select_tower() -> bool:
 
 func show_tower_cards(tower: Node3D):
 	# Close existing cards first
-	close_tower_cards()
-	
+	#close_tower_cards()
+	# Show tower range
+	if upgrade_card:
+		upgrade_card.queue_free()
+		upgrade_card = null
+	if sell_card:
+		sell_card.queue_free()
+		sell_card = null
+# Show tower range - add debug
+	print("Showing cards for tower: ", tower)
+	print("Tower has show_range method: ", tower.has_method("show_range"))
+	if tower.has_method("show_range"):
+		tower.show_range()
+		print("Called show_range()")
 	# Get tower level and cost
 	var tower_level = tower.get("tower_level") if tower.get("tower_level") else 0
 	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
@@ -1437,7 +1479,8 @@ func upgrade_tower(tower: Node3D):
 	var tower_cost = tower.get("tower_cost") if tower.get("tower_cost") else 100
 	var tower_level = tower.get("tower_level") if tower.get("tower_level") else 0
 	var upgrade_cost = tower_cost * (tower_level + 1)  # Level 1: 1x, Level 2: 2x, Level 3: 3x
-	
+	if tower == selected_tower and tower.has_method("show_range"):
+		tower.show_range()
 	
 	# Check max level
 	if tower_level >= 3:
@@ -1472,7 +1515,8 @@ func upgrade_tower(tower: Node3D):
 	# Update range indicator visual
 	if tower.has_method("update_range_indicator"):
 		tower.update_range_indicator()
-	
+		# Force range to show during upgrade if tower is selected
+
 	# Update visual level indicators
 	if tower.has_method("update_level_lights"):
 		tower.update_level_lights()
@@ -1520,6 +1564,10 @@ func sell_tower_from_card(tower: Node3D):
 		path_system.calculate_path()
 
 func close_tower_cards():
+		# Hide range for previously selected tower
+	hide_tower_ui()
+	if selected_tower and selected_tower.has_method("hide_range"):
+		selected_tower.hide_range()
 	selected_tower = null
 	if upgrade_card:
 		upgrade_card.queue_free()
