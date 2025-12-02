@@ -46,8 +46,9 @@ __pycache__/
 
 # --- Textures and exports you do NOT want to track ---
 # (Uncomment if you don't want large exports in repo)
-# exports/
-# screenshots/
+exports/
+exportgame/
+screenshots/
 
 # --- Blockbench autosave ---
 *.bbproject.autosave
@@ -68,3 +69,4 @@ Library/
 Temp/
 Logs/
 MemoryCaptures/
+exportgame/ 
