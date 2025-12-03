@@ -402,7 +402,7 @@ func update_tower_preview(grid_pos: Vector2i, world_pos: Vector3):
 		# Update tower info label
 		if tower_info_label:
 			tower_info_label.visible = true
-			var tower_type = main.tower_names[main.selected_tower_type - 1] if main.has_method("get") else "Tower"
+			var tower_type = main.tower_names[main.selected_tower_type] if main.has_method("get") else "Tower"
 			var cost_text = str(tower_cost) + " Gold" if tower_cost else "FREE"
 			tower_info_label.text = tower_type + "\n" + cost_text
 			

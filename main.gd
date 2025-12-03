@@ -660,6 +660,9 @@ func cancel_tower_selection():
 	
 	if grid:
 		grid.hide_tower_preview()
+	if selected_tower and selected_tower.has_method("hide_range"):
+		selected_tower.hide_range()
+	selected_tower = null
 
 func try_sell_tower() -> bool:
 	# Raycast to find tower under mouse
@@ -1462,7 +1465,7 @@ func create_tower_ui_card(tower: Node3D, card_type: String, is_upgrade: bool) ->
 			upgrade_tower(tower_ref)
 		else:
 			sell_tower_from_card(tower_ref)
-		close_tower_cards()
+		#close_tower_cards()
 	)
 	
 	return card
@@ -1504,7 +1507,7 @@ func upgrade_tower(tower: Node3D):
 	tower.set("tower_level", tower_level + 1)
 	tower.set("damage", int(current_damage * 1.5))
 	#tower.set("attack_range", current_range * 1.2)
-	tower.set("attack_range", current_range + 2.0)
+	tower.set("attack_range", current_range + 1.2)
 	tower.set("fire_rate", current_fire_rate * 1.25)
 	
 	#print("Tower upgraded to level ", tower_level + 1)
@@ -1523,7 +1526,14 @@ func upgrade_tower(tower: Node3D):
 	
 	# Show upgrade effect
 	create_upgrade_effect(tower.global_position)
-
+	# Wait one frame to ensure all tower properties are updated
+	await get_tree().process_frame
+	
+	# Now refresh the cards with updated stats
+	close_tower_cards()  # Clear old cards
+	show_tower_cards(tower)  # Create new cards with fresh data
+	
+	
 func sell_tower_from_card(tower: Node3D):
 	if not tower or not is_instance_valid(tower):
 		#print("Invalid tower reference")

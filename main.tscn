@@ -65,7 +65,8 @@ size = Vector2(8, 4)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_ig7tw")
-obstacle_cluster_count = 16
+obstacle_cluster_count = 12
+obstacle_cluster_size = 6
 tower_0_scene = ExtResource("2_yaehf")
 tower_1_scene = ExtResource("2_h2yge")
 tower_2_scene = ExtResource("3_kek77")
